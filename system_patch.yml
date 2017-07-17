@@ -1,0 +1,42 @@
+---
+- name: system patch
+  hosts: all 
+  tasks:
+
+
+    - name: update kernel 
+      yum:
+        name: kernel 
+        state: latest
+      register: kernel_update
+ 
+
+    - name: update system
+      yum:
+        name: '*' 
+        state: latest
+  
+
+    - name: reboot system if kernel is updated
+      ignore_errors: True
+      command: shutdown -r +1 
+      async: 1
+      poll: 0
+      when: kernel_update.changed == True 
+      
+
+    - name: wait for reboot
+      delegate_to: localhost
+      wait_for:
+        delay: 75
+        host: "{{inventory_hostname}}"
+        state: started 
+        port: 22
+      when: kernel_update.changed == True
+
+    - name: print message 
+      debug:
+        msg: "The system is back online"
+
+
+      
