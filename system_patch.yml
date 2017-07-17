@@ -33,10 +33,12 @@
         state: started 
         port: 22
       when: kernel_update.changed == True
+      register: reboot_wait
 
     - name: print message 
       debug:
         msg: "The system is back online"
+      when: reboot_wait.changed == True
 
 
       
